@@ -136,16 +136,16 @@ func newPodForCR(cr *podv1alpha1.PodRequest) *corev1.Pod {
 	}
 	return &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      cr.Name + "-pod",
+			Name:      cr.Name,
 			Namespace: cr.Namespace,
 			Labels:    labels,
 		},
 		Spec: corev1.PodSpec{
 			Containers: []corev1.Container{
 				{
-					Name:    "busybox",
-					Image:   "busybox",
-					Command: []string{"sleep", "3600"},
+					Name:    cr.Spec.Name,
+					Image:   cr.Spec.Image,
+					Command: cr.Spec.Command,
 				},
 			},
 		},
