@@ -1,0 +1,7 @@
+apiVersion: pod.jewzaam.org/v1alpha1
+kind: PodRequest
+metadata:
+  name: example-podrequest
+spec:
+  # Add fields here
+  size: 3
