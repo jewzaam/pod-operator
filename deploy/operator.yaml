@@ -16,7 +16,7 @@ spec:
       containers:
         - name: pod-operator
           # Replace this with the built image name
-          image: REPLACE_IMAGE
+          image: quay.io/nmalik/pod-operator:latest
           command:
           - pod-operator
           imagePullPolicy: Always
