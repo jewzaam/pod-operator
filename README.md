@@ -28,13 +28,9 @@ operator-sdk add controller --api-version=$OP_API_GROUP/$OP_API_VERSION --kind=$
 
 ```bash
 # build operator
-operator-sdk build quay.io/$QUAY_USERNAME/$OP_NAME:$OP_VERSION
+operator-sdk build quay.io/$QUAY_USERNAME/$OP_NAME:latest
 
-# tag image
-docker tag quay.io/$QUAY_USERNAME/$OP_NAME:$OP_VERSION quay.io/$QUAY_USERNAME/$OP_NAME:latest
-
-# push operator images
-docker push quay.io/$QUAY_USERNAME/$OP_NAME:$OP_VERSION
+# push operator image
 docker push quay.io/$QUAY_USERNAME/$OP_NAME:latest
 ```
 
