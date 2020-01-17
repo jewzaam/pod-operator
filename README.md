@@ -1,4 +1,5 @@
-Example operator used for DevConf.CZ 2020 presentation.
+Example operator used for DevConf.CZ 2020 presentation: https://speakerdeck.com/jewzaam/implementing-microservices-as-kubernetes-operators 
+
 
 # Create the Operator
 

@@ -30,8 +30,9 @@ spec:
 EOF
 
 pause() {
-  ps1
+  echo ""
   echo "# ${STEP_NUMBER} ${1}"
+  echo ""
   STEP_NUMBER=$((STEP_NUMBER+1))
   if [ "$2" != "" ];
   then
@@ -69,50 +70,55 @@ mkdir -p $GOPATH/src/github.com/$GITHUB_USERNAME 2>&1 >/dev/null
 cd $GOPATH/src/github.com/$GITHUB_USERNAME 2>&1 >/dev/null
 clear
 
+# step 1
 CMD="operator-sdk new $OP_NAME"
 pause "create Operator" "$CMD"
 docmd cd $OP_NAME
 
+# step 2
 pause "create Custom Resource Definition" "operator-sdk add api --kind=$OP_KIND" "operator-sdk add api --api-version=$OP_API_GROUP/$OP_API_VERSION --kind=$OP_KIND"
 
+# step 3
 pause "create Controller" "operator-sdk add controller --kind=$OP_KIND" "operator-sdk add controller --api-version=$OP_API_GROUP/$OP_API_VERSION --kind=$OP_KIND"
 
-pause "review Controller and edit CRD & Controller" "code ." "code $(pwd) $(find -name '*_controller.go') $(find -name '*_types.go')"
+# step 4
+pause "review Controller and edit CRD & Controller" "edit code" "code $(pwd) $(find -name '*_controller.go') $(find -name '*_types.go')"
 
-CMD="operator-sdk generate openapi"
-pause "generate updated CRDs" "$CMD"
+# skipping because it takes time and isn't necessary for the demo
+#CMD="operator-sdk generate openapi"
+#pause "generate updated CRDs" "$CMD"
 
+# step 5
 CMD="operator-sdk build quay.io/$QUAY_USERNAME/$OP_NAME:latest"
 pause "build Operator" "$CMD"
 
+# step 6
 CMD="docker push quay.io/$QUAY_USERNAME/$OP_NAME:latest"
 pause "push Image" "$CMD"
 
-CMD="sed -i \"s|REPLACE_IMAGE|quay.io/$QUAY_USERNAME/$OP_NAME:latest|g\" deploy/operator.yaml"
-pause "set deployment image" "$CMD"
-docmd grep image: deploy/operator.yaml
+# quietly replace the placeholder
+sed -i "s|REPLACE_IMAGE|quay.io/$QUAY_USERNAME/$OP_NAME:latest|g" deploy/operator.yaml 2>&1 >/dev/null
 
-CMD="kubectl create namespace pod-operator"
-pause "create namespace" "$CMD"
+# quietly create namespace, it isn't important for the demo to show
+kubectl create namespace pod-operator 2>&1 >/dev/null
 
-CMD="kubectl -n pod-operator create -f deploy/crds/*crd*.yaml -f deploy/service_account.yaml -f deploy/role.yaml -f deploy/role_binding.yaml -f deploy/operator.yaml"
-pause "deploy Operator" "$CMD"
+# quietly delete generated CR
+rm deploy/crds/*cr.yaml 2>&1 >/dev/null
+
+# step 7
+pause "deploy Operator" "kubectl create -f deploy/ -f deploy/crds/" "kubectl create -f deploy/ -f deploy/crds/ -n pod-operator"
+
+# TESTING
 
 cat /tmp/podrequest.yaml
-CMD="kubectl -n pod-operator create -f /tmp/podrequest.yaml"
-pause "create PodRequest" "$CMD"
+read
+pause "create PodRequest" "kubectl create -f podrequest.yaml" "kubectl -n pod-operator create -f /tmp/podrequest.yaml"
 
-CMD="kubectl -n pod-operator wait --for=condition=Ready pod/busybox"
-pause "wait for busybox Pod" "$CMD"
+pause "review busybox logs" "kubectl logs busybox" "kubectl -n pod-operator logs busybox"
 
-CMD="kubectl -n pod-operator logs busybox"
-pause "review busybox logs" "$CMD"
+pause "delete Pod (it's recreated)" "kubectl delete pod busybox" "kubectl -n pod-operator delete pod busybox"
 
-CMD="kubectl -n pod-operator delete pod busybox"
-pause "delete Pod (it's recreated)" "$CMD"
-
-CMD="kubectl -n pod-operator delete podrequest busybox"
-pause "delete PodRequest" "$CMD"
+pause "delete PodRequest" "kubectl delete podrequest busybox" "kubectl -n pod-operator delete podrequest busybox"
 
 pause "done!"
 kubectl delete namespace pod-operator
