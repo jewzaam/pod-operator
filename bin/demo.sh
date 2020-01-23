@@ -12,6 +12,8 @@ export OP_API_GROUP=pod.jewzaam.org
 export OP_API_VERSION=v1alpha1
 export OP_KIND=PodRequest
 
+export PUSH_TIMEOUT="45s"
+
 export STEP_NUMBER=1
 
 cat << EOF > /tmp/podrequest.yaml
@@ -23,10 +25,7 @@ metadata:
 spec:
   name: busybox
   image: busybox
-  command:
-  - /bin/sh
-  - -ec
-  - while :; do echo "Hello DevConf.CZ 2020!"; sleep 5; done
+  command: [ "/bin/sh", "-ec", "while :; do echo 'Hello DevConf.CZ 2020!'; sleep 5; done" ]
 EOF
 
 pause() {
@@ -93,8 +92,9 @@ CMD="operator-sdk build quay.io/$QUAY_USERNAME/$OP_NAME:latest"
 pause "build Operator" "$CMD"
 
 # step 6
+# we will fail early on this one and assume correct image is deployed to quay.io already.  this way push won't hold up the demo (nobody wants to watch it for even 90s)
 CMD="docker push quay.io/$QUAY_USERNAME/$OP_NAME:latest"
-pause "push Image" "$CMD"
+pause "push Image" "$CMD" "timeout $PUSH_TIMEOUT $CMD || true"
 
 # quietly replace the placeholder
 sed -i "s|REPLACE_IMAGE|quay.io/$QUAY_USERNAME/$OP_NAME:latest|g" deploy/operator.yaml 2>&1 >/dev/null
@@ -109,7 +109,7 @@ rm deploy/crds/*cr.yaml 2>&1 >/dev/null
 pause "deploy Operator" "kubectl create -f deploy/ -f deploy/crds/" "kubectl create -f deploy/ -f deploy/crds/ -n pod-operator"
 
 # TESTING
-
+read
 cat /tmp/podrequest.yaml
 read
 pause "create PodRequest" "kubectl create -f podrequest.yaml" "kubectl -n pod-operator create -f /tmp/podrequest.yaml"
@@ -121,6 +121,6 @@ pause "delete Pod (it's recreated)" "kubectl delete pod busybox" "kubectl -n pod
 pause "delete PodRequest" "kubectl delete podrequest busybox" "kubectl -n pod-operator delete podrequest busybox"
 
 pause "done!"
-kubectl delete namespace pod-operator
-kubectl delete crds podrequests.pod.jewzaam.org
+kubectl delete namespace pod-operator 2>&1 >/dev/null
+kubectl delete crds podrequests.pod.jewzaam.org 2>&1 >/dev/null
 
