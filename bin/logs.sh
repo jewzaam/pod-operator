@@ -19,7 +19,7 @@ do
 
     if [ "$OP_POD_NAME" == "" ];
     then
-        echo "Waiting for operator to be available..." >> $TMP_FILE
+        echo "Waiting for pod-operator logs..." >> $TMP_FILE
     else
         CMD="kubectl -n pod-operator logs -f $OP_POD_NAME"
         echo -e "$PS1$CMD" >> $TMP_FILE

@@ -1,0 +1,9 @@
+apiVersion: pod.jewzaam.org/v1alpha1
+kind: PodRequest
+metadata:
+  name: busybox
+  namespace: pod-operator
+spec:
+  name: busybox
+  image: busybox
+  command: [ "/bin/sh", "-ec", "while :; do echo 'Hello DevConf.CZ 2020!'; sleep 5; done" ]

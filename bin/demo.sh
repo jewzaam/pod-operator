@@ -12,7 +12,7 @@ export OP_API_GROUP=pod.jewzaam.org
 export OP_API_VERSION=v1alpha1
 export OP_KIND=PodRequest
 
-export PUSH_TIMEOUT="45s"
+export PUSH_TIMEOUT="15s"
 
 export STEP_NUMBER=1
 
@@ -96,8 +96,11 @@ pause "build Operator" "$CMD"
 CMD="docker push quay.io/$QUAY_USERNAME/$OP_NAME:latest"
 pause "push Image" "$CMD" "timeout $PUSH_TIMEOUT $CMD || true"
 
+echo "TIMEOUT: using quay.io/$QUAY_USERNAME/$OP_NAME:demo"
+
 # quietly replace the placeholder
-sed -i "s|REPLACE_IMAGE|quay.io/$QUAY_USERNAME/$OP_NAME:latest|g" deploy/operator.yaml 2>&1 >/dev/null
+# small cheat, using a pre-pushed tag "demo" that isn't what we pushed live in this demo.. expect the docker push to fail / timeout, so want something concrete to use!
+sed -i "s|REPLACE_IMAGE|quay.io/$QUAY_USERNAME/$OP_NAME:demo|g" deploy/operator.yaml 2>&1 >/dev/null
 
 # quietly create namespace, it isn't important for the demo to show
 kubectl create namespace pod-operator 2>&1 >/dev/null
@@ -109,7 +112,8 @@ rm deploy/crds/*cr.yaml 2>&1 >/dev/null
 pause "deploy Operator" "kubectl create -f deploy/ -f deploy/crds/" "kubectl create -f deploy/ -f deploy/crds/ -n pod-operator"
 
 # TESTING
-read
+sleep 10
+echo ""
 cat /tmp/podrequest.yaml
 read
 pause "create PodRequest" "kubectl create -f podrequest.yaml" "kubectl -n pod-operator create -f /tmp/podrequest.yaml"
