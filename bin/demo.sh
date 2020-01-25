@@ -89,17 +89,17 @@ pause "review Controller and edit CRD & Controller" "edit code" "code $(pwd) $(f
 
 # step 5
 CMD="operator-sdk build quay.io/$QUAY_USERNAME/$OP_NAME:latest"
-pause "build Operator" "$CMD"
+pause "build Operator" "$CMD" "$CMD --image-builder podman"
 
 # step 6
 # we will fail early on this one and assume correct image is deployed to quay.io already.  this way push won't hold up the demo (nobody wants to watch it for even 90s)
-CMD="docker push quay.io/$QUAY_USERNAME/$OP_NAME:latest"
+CMD="podman push quay.io/$QUAY_USERNAME/$OP_NAME:latest"
 pause "push Image" "$CMD" "timeout $PUSH_TIMEOUT $CMD || true"
 
 echo "TIMEOUT: using quay.io/$QUAY_USERNAME/$OP_NAME:demo"
 
 # quietly replace the placeholder
-# small cheat, using a pre-pushed tag "demo" that isn't what we pushed live in this demo.. expect the docker push to fail / timeout, so want something concrete to use!
+# small cheat, using a pre-pushed tag "demo" that isn't what we pushed live in this demo.. expect the podman push to fail / timeout, so want something concrete to use!
 sed -i "s|REPLACE_IMAGE|quay.io/$QUAY_USERNAME/$OP_NAME:demo|g" deploy/operator.yaml 2>&1 >/dev/null
 
 # quietly create namespace, it isn't important for the demo to show
