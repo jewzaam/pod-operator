@@ -2,7 +2,7 @@
 
 TMP_FILE=/tmp/resources.log
 
-PS1="\033[01;32m${USER}\033[01;34m\$ \033[00m"
+PS1="\033[01;34m\$ \033[00m"
 
 while true;
 do

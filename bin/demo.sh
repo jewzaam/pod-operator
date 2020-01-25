@@ -2,6 +2,29 @@
 
 set -e
 
+# colors
+BLACK='\033[0;30m'
+BLUE='\033[0;34m'
+GREEN='\033[0;32m'
+CYAN='\033[0;36m'
+RED='\033[0;31m'
+PURPLE='\033[0;35m'
+BROWN='\033[0;33m'
+LIGHT_GRAY='\033[0;37m'
+DARK_GRAY='\033[1;30m'
+LIGHT_BLUE='\033[1;34m'
+LIGHT_GREEN='\033[1;32m'
+LIGHT_CYAN='\033[1;36m'
+LIGHT_RED='\033[1;31m'
+LIGHT_PURPLE='\033[1;35m'
+YELLOW='\033[1;33m'
+WHITE='\033[1;37m'
+NO_COLOR='\033[0m'
+
+PS1_COLOR=$BLUE
+HEADING_COLOR=$BLUE
+COMMAND_COLOR=$GREEN
+
 # export some things we'll need to reuse
 export GO111MODULE=on
 export QUAY_USERNAME=nmalik
@@ -30,13 +53,13 @@ EOF
 
 pause() {
   echo ""
-  echo "# ${STEP_NUMBER} ${1}"
+  echo -e "${HEADING_COLOR}# ${STEP_NUMBER} ${1}${NO_COLOR}"
   echo ""
   STEP_NUMBER=$((STEP_NUMBER+1))
   if [ "$2" != "" ];
   then
     ps1
-    echo -n "${2}"
+    echo -ne "${COMMAND_COLOR}${2}${NO_COLOR}"
   fi
   read
   if [ "$3" != "" ];
@@ -49,7 +72,7 @@ pause() {
 }
 
 ps1() {
-  echo -ne "\033[01;32m${USER} \033[01;34m$(basename $(pwd))\$ \033[00m"
+  echo -ne "${PS1_COLOR}\$ ${NO_COLOR}"
 }
 
 echocmd() {
