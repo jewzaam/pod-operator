@@ -29,10 +29,10 @@ operator-sdk add controller --api-version=$OP_API_GROUP/$OP_API_VERSION --kind=$
 
 ```bash
 # build operator
-operator-sdk build quay.io/$QUAY_USERNAME/$OP_NAME:latest
+operator-sdk build quay.io/$QUAY_USERNAME/$OP_NAME:latest --image-builder podman
 
 # push operator image
-docker push quay.io/$QUAY_USERNAME/$OP_NAME:latest
+podman push quay.io/$QUAY_USERNAME/$OP_NAME:latest
 ```
 
 # Deploy the Operator
@@ -40,7 +40,7 @@ docker push quay.io/$QUAY_USERNAME/$OP_NAME:latest
 ```bash
 sed -i "s|REPLACE_IMAGE|quay.io/$QUAY_USERNAME/$OP_NAME:latest|g" deploy/operator.yaml
 
-kubectl new-project pod-operator
+kubectl create ns pod-operator
 
 kubectl create -f deploy/crds/*crd*.yaml
 kubectl create -f deploy/service_account.yaml
@@ -69,15 +69,15 @@ spec:
   - while :; do echo "."; sleep 5; done' | kubectl create -f -
 
 # verify it’s doing what we expected
-kubectl logs busybox -f
+kubectl -n pod-operator logs busybox -f
 ```
 
 ## Delete a PodRequest
 
 ```bash
 # delete and verify it's gone
-kubectl delete podrequest busybox
+kubectl -n pod-operator delete podrequest busybox
 
 # verify it's gone (or terminating)
-kubectl get pods -l app=busybox
+kubectl -n pod-operator get pods -l app=busybox
 ```
